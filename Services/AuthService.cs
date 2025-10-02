@@ -129,7 +129,8 @@ namespace Library_Management_Sys.Services
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("uid", user.Id.ToString())
+                new Claim("uid", user.Id.ToString()),
+                new Claim("permissions", ((int)user.User_permissions).ToString())
             }.Union(userClaims).Union(roleClaims);
 
             var symetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_JWT.Key));

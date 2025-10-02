@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library_Management_Sys.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    [Migration("20251002093746_V")]
-    partial class V
+    [Migration("20251002114803_V1")]
+    partial class V1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -727,6 +727,9 @@ namespace Library_Management_Sys.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("User_permissions")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

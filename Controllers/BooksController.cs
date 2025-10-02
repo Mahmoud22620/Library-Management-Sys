@@ -1,30 +1,41 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
 using Library_Management_Sys.Models;
-using Library_Management_Sys.Repositories.Interfaces;
-using AutoMapper;
 using Library_Management_Sys.Models.DTOs;
+using Library_Management_Sys.Models.Enums;
+using Library_Management_Sys.Repositories.Interfaces;
+using Library_Management_Sys.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Library_Management_Sys.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private readonly IGenericRepository<Book> _bookRepository;
         private readonly IMapper _mapper;
+        private readonly IPermissionService _permissionService;
 
-        public BooksController(IGenericRepository<Book> bookRepo, IMapper mapper)
+        public BooksController(IGenericRepository<Book> bookRepo, IMapper mapper , IPermissionService permissionService)
         {
             _bookRepository = bookRepo;
             _mapper = mapper;
+            _permissionService = permissionService;
         }
 
         // GET: api/Books
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDTO>>> GetBooks()
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var booksList = await _bookRepository.GetAllAsync();
             return Ok(_mapper.Map<List<BookDTO>>(booksList));
         }
@@ -33,6 +44,11 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDTO>> GetBook(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Authors_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var book = await _bookRepository.GetAsync(b => b.BookId == id);
 
             if (book == null)
@@ -47,6 +63,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPut]
         public async Task<IActionResult> PutBook(BookDTO bookDto , IFormFile CoverImg)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var book = await BookExists(bookDto.BookId);
             if (book != null)
             {
@@ -85,6 +106,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPost]
         public async Task<ActionResult<BookDTO>> PostBook(BookDTO bookDto , IFormFile CoverImg)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_Create);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (bookDto == null)
             {
                 return BadRequest();
@@ -115,6 +141,11 @@ namespace Library_Management_Sys.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_Delete);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var book = await _bookRepository.GetAsync(b => b.BookId == id);
             if (book == null)
             {
