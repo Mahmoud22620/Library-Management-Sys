@@ -9,26 +9,37 @@ using Library_Management_Sys.Models;
 using Library_Management_Sys.Repositories.Interfaces;
 using AutoMapper;
 using Library_Management_Sys.Models.DTOs;
+using Library_Management_Sys.Services;
+using Library_Management_Sys.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Library_Management_Sys.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BorrowTransactionsController : ControllerBase
     {
         private readonly IBorrowTransactionRepository _borrowTransactionRepository;
         private readonly IMapper _mapper;
+        private readonly IPermissionService _permissionService;
 
-        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper)
+        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper, IPermissionService permissionService)
         {
             _borrowTransactionRepository = borrowTransactionRepo;
             _mapper = mapper;
+            _permissionService = permissionService;
         }
 
         // GET: api/BorrowTransactions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BorrowTransactionDTO>>> GetBorrowTransactions()
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             return Ok(await _borrowTransactionRepository.GetAllAsync());
         }
 
@@ -36,18 +47,27 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BorrowTransactionDTO>> GetBorrowTransaction(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (id == 0 || id == null)
             {
                 return BadRequest();
             }
             return Ok(await _borrowTransactionRepository.BorrowTransactionExists(id));
-
         }
 
         //GET: api/BorrowTransactions/Member/5
         [HttpGet("Member/{memberId}")]
         public async Task<ActionResult<IEnumerable<BorrowTransactionDTO>>> GetBorrowTransactionsByMember(int memberId)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (memberId == 0 || memberId == null)
             {
                 return BadRequest();
@@ -64,6 +84,11 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("Book/{bookId}")]
         public async Task<ActionResult<IEnumerable<BorrowTransactionDTO>>> GetBorrowTransactionsByBook(int bookId)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (bookId == 0 || bookId == null)
             {
                 return BadRequest();
@@ -76,11 +101,15 @@ namespace Library_Management_Sys.Controllers
             return Ok(transactions);
         }
 
-
         //PUT: api/BorrowTransactions/Return/5
         [HttpPut("Return/{id}")]
         public async Task<IActionResult> ReturnBook(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var transaction = await BorrowTransactionExists(id);
             if (transaction == null)
             {
@@ -98,6 +127,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPut("Renew/{id}")]
         public async Task<IActionResult> RenewBorrowing(int id, [FromBody] DateTime newDueDate)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var transaction = await BorrowTransactionExists(id);
             if (transaction == null)
             {
@@ -119,6 +153,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPut("Overdue/{id}")]
         public async Task<IActionResult> MarkOverdueTransactions(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (id == 0 || id == null)
             {
                 return BadRequest();
@@ -126,10 +165,16 @@ namespace Library_Management_Sys.Controllers
             await _borrowTransactionRepository.overdueBook(id);
             return Ok(new { message = "Transaction marked as overdue if applicable" });
         }
+
         // PUT: api/BorrowTransactions
         [HttpPut]
         public async Task<IActionResult> PutBorrowTransaction(BorrowTransactionDTO transactionDto)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var transaction = await BorrowTransactionExists(transactionDto.Id);
             if (transaction != null)
             {
@@ -146,6 +191,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPost]
         public async Task<ActionResult<BorrowTransactionDTO>> PostBorrowTransaction(BorrowTransactionDTO transactionDto)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Create);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (transactionDto == null)
             {
                 return BadRequest();
@@ -158,6 +208,11 @@ namespace Library_Management_Sys.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBorrowTransaction(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.BorrowTransactions_Delete);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var transaction = await _borrowTransactionRepository.GetAsync(t => t.Id == id);
             if (transaction == null)
             {

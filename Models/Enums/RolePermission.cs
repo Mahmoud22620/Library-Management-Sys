@@ -18,7 +18,7 @@
 
          //Member can only view books and their own borrow transactions
         public const Permissions Staff = Permissions.Members_Create | Permissions.Members_Update | Permissions.Members_View |
-             Permissions.BorrowTransactions_Create | Permissions.BorrowTransactions_Update | Permissions.BorrowTransactions_View;
+             Permissions.BorrowTransactions_Create | Permissions.BorrowTransactions_Update | Permissions.BorrowTransactions_View | Permissions.Books_View | Permissions.Authors_View | Permissions.Categories_View | Permissions.Publishers_View;
 
     }
 }

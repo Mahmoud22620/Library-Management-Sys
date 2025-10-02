@@ -9,27 +9,38 @@ using Library_Management_Sys.Models;
 using Library_Management_Sys.Repositories.Interfaces;
 using AutoMapper;
 using Library_Management_Sys.Models.DTOs;
+using Library_Management_Sys.Services;
+using Library_Management_Sys.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Library_Management_Sys.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly IGenericRepository<Category> _categoryRepository;
         private readonly IMapper _mapper;
+        private readonly IPermissionService _permissionService;
 
-        public CategoriesController( IGenericRepository<Category> categoryRepo , IMapper mapper )
+        public CategoriesController(IGenericRepository<Category> categoryRepo, IMapper mapper, IPermissionService permissionService)
         {
             _categoryRepository = categoryRepo;
             _mapper = mapper;
+            _permissionService = permissionService;
         }
 
         // GET: api/Categories
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
-             var CategoriesList = await _categoryRepository.GetAllAsync();
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Categories_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
+            var CategoriesList = await _categoryRepository.GetAllAsync();
             return Ok(_mapper.Map<List<CategoryDTO>>(CategoriesList));
 
         }
@@ -38,6 +49,11 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryDTO>> GetCategory(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Categories_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
 
             if (category == null)
@@ -48,14 +64,18 @@ namespace Library_Management_Sys.Controllers
             return Ok(_mapper.Map<CategoryDTO>(category));
         }
 
-        // PUT: api/Categories/5
+        // PUT: api/Categories
         [HttpPut]
-        public async Task<IActionResult> PutCategory( CategoryDTO categoryDto)
+        public async Task<IActionResult> PutCategory(CategoryDTO categoryDto)
         {
-            var category = CategoryExists(categoryDto.CategoryId);
-            if (category!=null)
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Categories_Update);
+            if (!Allowed)
             {
-                
+                return Forbid();
+            }
+            var category = await CategoryExists(categoryDto.CategoryId);
+            if (category != null)
+            {
                 await _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto));
                 return Ok(new { message = "Category updated successfully" });
             }
@@ -71,7 +91,12 @@ namespace Library_Management_Sys.Controllers
         [HttpPost]
         public async Task<ActionResult<CategoryDTO>> PostCategory(CategoryDTO categoryDto)
         {
-            if(categoryDto == null)
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Categories_Create);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
+            if (categoryDto == null)
             {
                 return BadRequest();
             }
@@ -83,6 +108,11 @@ namespace Library_Management_Sys.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Categories_Delete);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
             if (category == null)
             {

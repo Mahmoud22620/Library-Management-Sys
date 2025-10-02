@@ -9,26 +9,37 @@ using Library_Management_Sys.Models;
 using Library_Management_Sys.Repositories.Interfaces;
 using AutoMapper;
 using Library_Management_Sys.Models.DTOs;
+using Library_Management_Sys.Services;
+using Library_Management_Sys.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Library_Management_Sys.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PublishersController : ControllerBase
     {
         private readonly IGenericRepository<Publisher> _publisherRepository;
         private readonly IMapper _mapper;
+        private readonly IPermissionService _permissionService;
 
-        public PublishersController(IGenericRepository<Publisher> publisherRepo, IMapper mapper)
+        public PublishersController(IGenericRepository<Publisher> publisherRepo, IMapper mapper, IPermissionService permissionService)
         {
             _publisherRepository = publisherRepo;
             _mapper = mapper;
+            _permissionService = permissionService;
         }
 
         // GET: api/Publishers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PublisherDTO>>> GetPublishers()
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Publishers_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var publishersList = await _publisherRepository.GetAllAsync();
             return Ok(_mapper.Map<List<PublisherDTO>>(publishersList));
         }
@@ -37,6 +48,11 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PublisherDTO>> GetPublisher(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Publishers_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
 
             if (publisher == null)
@@ -51,6 +67,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPut]
         public async Task<IActionResult> PutPublisher(PublisherDTO publisherDto)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Publishers_Update);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var publisher = await PublisherExists(publisherDto.PublisherId);
             if (publisher != null)
             {
@@ -67,6 +88,11 @@ namespace Library_Management_Sys.Controllers
         [HttpPost]
         public async Task<ActionResult<PublisherDTO>> PostPublisher(PublisherDTO publisherDto)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Publishers_Create);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             if (publisherDto == null)
             {
                 return BadRequest();
@@ -79,6 +105,11 @@ namespace Library_Management_Sys.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePublisher(int id)
         {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Publishers_Delete);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
             var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
             if (publisher == null)
             {

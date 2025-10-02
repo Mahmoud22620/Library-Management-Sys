@@ -44,7 +44,7 @@ namespace Library_Management_Sys.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDTO>> GetBook(int id)
         {
-            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Authors_View);
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_View);
             if (!Allowed)
             {
                 return Forbid();
