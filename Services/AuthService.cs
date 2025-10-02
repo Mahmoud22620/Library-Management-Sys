@@ -1,12 +1,12 @@
 ﻿using Library_Management_Sys.Helpers;
 using Library_Management_Sys.Models;
 using Library_Management_Sys.Models.DTOs;
+using Library_Management_Sys.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Library_Management_Sys.Services
@@ -15,11 +15,12 @@ namespace Library_Management_Sys.Services
     {
         private readonly UserManager<User> _UserManager;
         private readonly JWT _JWT;
-
-        public AuthService(UserManager<User> userManager, IOptions<JWT> Jwt)
+        private readonly RoleManager<IdentityRole<Guid>> _RoleManager;
+        public AuthService(UserManager<User> userManager, IOptions<JWT> Jwt , RoleManager<IdentityRole<Guid>> roleManager )
         {
             _UserManager = userManager;
             _JWT = Jwt.Value;
+            _RoleManager = roleManager;
         }
         public async Task<AuthDTO> GetTokenAsync(LoginDTO model)
         {
@@ -58,10 +59,28 @@ namespace Library_Management_Sys.Services
                 return new AuthDTO { Message = "Username is already registered", IsAuthenticated = false };
             }
 
+            var permission = RolePermission.None;
+
+            switch (model.Role)
+            {
+                case "Admin":
+                    permission = RolePermission.Admin;
+                    break;
+                case "Librarian":
+                    permission = RolePermission.Librarian;
+                    break;
+                case "Staff":
+                    permission = RolePermission.Staff;
+                    break;
+                default:
+                    return new AuthDTO { Message = "Invalid role specified. Please choose either 'Admin', 'Librarian', or 'Member'.", IsAuthenticated = false };
+            }
+
             var user = new User
             {
                 Email = model.Email,
-                UserName = model.UserName
+                UserName = model.UserName,
+                User_permissions = permission,
             };
 
             var result = await _UserManager.CreateAsync(user, model.Password);
@@ -126,12 +145,28 @@ namespace Library_Management_Sys.Services
             return jwtSecurityToken;
         }
 
-        public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
+       //Change Role for existing user
+       public async Task<IdentityResult> AssignRoleAsync(string username, string role)
+       {
+            var user = await _UserManager.FindByNameAsync(username);
+            if (user == null)
+                return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+
+            // Check if role exists
+            if (!await _RoleManager.RoleExistsAsync(role))
+                return IdentityResult.Failed(new IdentityError { Description = $"Role '{role}' does not exist" });
+
+            var currentRoles = await _UserManager.GetRolesAsync(user);
+
+            // Remove old roles
+            var removeResult = await _UserManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+                return removeResult;
+
+            // Add new role
+            var addResult = await _UserManager.AddToRoleAsync(user, role);
+            return addResult;
+       }
+
     }
 }

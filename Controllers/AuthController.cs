@@ -43,5 +43,21 @@ namespace Library_Management_Sys.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPost("AssignRole")]
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleDTO RoleForm)
+        {
+            var user = await _UserManager.FindByNameAsync(RoleForm.Username);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            var result = await authService.AssignRoleAsync(RoleForm.Username, RoleForm.Role);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Failed to assign role.", errors = result.Errors });
+            }
+            return Ok(new { message = "Role assigned successfully." });
+        }
     }
 }

@@ -56,6 +56,98 @@ namespace Library_Management_Sys.Migrations
                     b.HasKey("AuthorId");
 
                     b.ToTable("Authors");
+
+                    b.HasData(
+                        new
+                        {
+                            AuthorId = 1,
+                            Bio = "British author best known for the Harry Potter fantasy series.",
+                            Name = "J.K. Rowling"
+                        },
+                        new
+                        {
+                            AuthorId = 2,
+                            Bio = "American author of horror, supernatural fiction, suspense, crime, science-fiction, and fantasy novels.",
+                            Name = "Stephen King"
+                        },
+                        new
+                        {
+                            AuthorId = 3,
+                            Bio = "English writer known for her detective novels, particularly those featuring Hercule Poirot and Miss Marple.",
+                            Name = "Agatha Christie"
+                        },
+                        new
+                        {
+                            AuthorId = 4,
+                            Bio = "English novelist and essayist, journalist and critic, whose work is characterised by lucid prose.",
+                            Name = "George Orwell"
+                        },
+                        new
+                        {
+                            AuthorId = 5,
+                            Bio = "English novelist known primarily for her six major novels which interpret the British landed gentry.",
+                            Name = "Jane Austen"
+                        },
+                        new
+                        {
+                            AuthorId = 6,
+                            Bio = "American writer, humorist, entrepreneur, publisher, and lecturer.",
+                            Name = "Mark Twain"
+                        },
+                        new
+                        {
+                            AuthorId = 7,
+                            Bio = "English writer and social critic who created some of the world's best-known fictional characters.",
+                            Name = "Charles Dickens"
+                        },
+                        new
+                        {
+                            AuthorId = 8,
+                            Bio = "American novelist, short-story writer, and journalist.",
+                            Name = "Ernest Hemingway"
+                        },
+                        new
+                        {
+                            AuthorId = 9,
+                            Bio = "American novelist and short story writer, widely regarded as one of the greatest American writers of the 20th century.",
+                            Name = "F. Scott Fitzgerald"
+                        },
+                        new
+                        {
+                            AuthorId = 10,
+                            Bio = "American novelist widely known for To Kill a Mockingbird.",
+                            Name = "Harper Lee"
+                        },
+                        new
+                        {
+                            AuthorId = 11,
+                            Bio = "English author, poet, philologist, and university professor, best known for The Hobbit and The Lord of the Rings.",
+                            Name = "J.R.R. Tolkien"
+                        },
+                        new
+                        {
+                            AuthorId = 12,
+                            Bio = "American author best known for his thriller novels, including the Robert Langdon novels.",
+                            Name = "Dan Brown"
+                        },
+                        new
+                        {
+                            AuthorId = 13,
+                            Bio = "Brazilian lyricist and novelist, best known for his novel The Alchemist.",
+                            Name = "Paulo Coelho"
+                        },
+                        new
+                        {
+                            AuthorId = 14,
+                            Bio = "Colombian novelist, short-story writer, screenwriter, and journalist.",
+                            Name = "Gabriel García Márquez"
+                        },
+                        new
+                        {
+                            AuthorId = 15,
+                            Bio = "American novelist, essayist, book editor, and college professor.",
+                            Name = "Toni Morrison"
+                        });
                 });
 
             modelBuilder.Entity("Library_Management_Sys.Models.Book", b =>
@@ -112,6 +204,233 @@ namespace Library_Management_Sys.Migrations
                     b.HasIndex("PublisherId");
 
                     b.ToTable("Books");
+
+                    b.HasData(
+                        new
+                        {
+                            BookId = 1,
+                            AuthorId = 1,
+                            CategoryId = 6,
+                            CoverImage = "harrypotter1.jpg",
+                            Edition = "1st Edition",
+                            ISBN = "9780747532699",
+                            Language = "English",
+                            PublisherId = 1,
+                            Status = 0,
+                            Summary = "Harry Potter, an eleven-year-old orphan, discovers that he is a wizard and is invited to study at Hogwarts.",
+                            Title = "Harry Potter and the Philosopher's Stone",
+                            Year = 1997
+                        },
+                        new
+                        {
+                            BookId = 2,
+                            AuthorId = 2,
+                            CategoryId = 10,
+                            CoverImage = "theshining.jpg",
+                            Edition = "1st Edition",
+                            ISBN = "9780385121675",
+                            Language = "English",
+                            PublisherId = 2,
+                            Status = 0,
+                            Summary = "A family heads to an isolated hotel for the winter where a sinister presence influences the father into violence.",
+                            Title = "The Shining",
+                            Year = 1977
+                        },
+                        new
+                        {
+                            BookId = 3,
+                            AuthorId = 3,
+                            CategoryId = 7,
+                            CoverImage = "orientexpress.jpg",
+                            Edition = "Reprint Edition",
+                            ISBN = "9780062693662",
+                            Language = "English",
+                            PublisherId = 2,
+                            Status = 0,
+                            Summary = "Detective Hercule Poirot investigates a murder aboard the famous European train.",
+                            Title = "Murder on the Orient Express",
+                            Year = 1934
+                        },
+                        new
+                        {
+                            BookId = 4,
+                            AuthorId = 4,
+                            CategoryId = 9,
+                            CoverImage = "1984.jpg",
+                            Edition = "Signet Classic",
+                            ISBN = "9780451524935",
+                            Language = "English",
+                            PublisherId = 3,
+                            Status = 0,
+                            Summary = "In a totalitarian future society, Winston Smith works for the Ministry of Truth and falls in love with Julia.",
+                            Title = "1984",
+                            Year = 1949
+                        },
+                        new
+                        {
+                            BookId = 5,
+                            AuthorId = 5,
+                            CategoryId = 8,
+                            CoverImage = "prideandprejudice.jpg",
+                            Edition = "Penguin Classics",
+                            ISBN = "9780141439518",
+                            Language = "English",
+                            PublisherId = 1,
+                            Status = 0,
+                            Summary = "The romantic clash between the opinionated Elizabeth Bennet and her proud beau, Mr. Darcy.",
+                            Title = "Pride and Prejudice",
+                            Year = 1813
+                        },
+                        new
+                        {
+                            BookId = 6,
+                            AuthorId = 6,
+                            CategoryId = 1,
+                            CoverImage = "tomsawyer.jpg",
+                            Edition = "Dover Thrift Editions",
+                            ISBN = "9780486400778",
+                            Language = "English",
+                            PublisherId = 4,
+                            Status = 0,
+                            Summary = "The adventures of a young boy growing up along the Mississippi River.",
+                            Title = "The Adventures of Tom Sawyer",
+                            Year = 1876
+                        },
+                        new
+                        {
+                            BookId = 7,
+                            AuthorId = 7,
+                            CategoryId = 1,
+                            CoverImage = "taleoftwocities.jpg",
+                            Edition = "Dover Thrift Editions",
+                            ISBN = "9780486406510",
+                            Language = "English",
+                            PublisherId = 4,
+                            Status = 0,
+                            Summary = "A historical novel set in London and Paris before and during the French Revolution.",
+                            Title = "A Tale of Two Cities",
+                            Year = 1859
+                        },
+                        new
+                        {
+                            BookId = 8,
+                            AuthorId = 8,
+                            CategoryId = 1,
+                            CoverImage = "oldmanandthesea.jpg",
+                            Edition = "Scribner",
+                            ISBN = "9780684801223",
+                            Language = "English",
+                            PublisherId = 3,
+                            Status = 0,
+                            Summary = "An aging Cuban fisherman struggles with a giant marlin far out in the Gulf Stream.",
+                            Title = "The Old Man and the Sea",
+                            Year = 1952
+                        },
+                        new
+                        {
+                            BookId = 9,
+                            AuthorId = 9,
+                            CategoryId = 1,
+                            CoverImage = "greatgatsby.jpg",
+                            Edition = "Scribner",
+                            ISBN = "9780743273565",
+                            Language = "English",
+                            PublisherId = 3,
+                            Status = 0,
+                            Summary = "A classic novel about the Jazz Age in the United States, narrated by Nick Carraway.",
+                            Title = "The Great Gatsby",
+                            Year = 1925
+                        },
+                        new
+                        {
+                            BookId = 10,
+                            AuthorId = 10,
+                            CategoryId = 1,
+                            CoverImage = "tokillamockingbird.jpg",
+                            Edition = "Harper Perennial",
+                            ISBN = "9780060935467",
+                            Language = "English",
+                            PublisherId = 2,
+                            Status = 0,
+                            Summary = "A gripping tale of racial injustice and childhood innocence in the American South.",
+                            Title = "To Kill a Mockingbird",
+                            Year = 1960
+                        },
+                        new
+                        {
+                            BookId = 11,
+                            AuthorId = 11,
+                            CategoryId = 6,
+                            CoverImage = "thehobbit.jpg",
+                            Edition = "Houghton Mifflin Harcourt",
+                            ISBN = "9780547928227",
+                            Language = "English",
+                            PublisherId = 5,
+                            Status = 0,
+                            Summary = "Bilbo Baggins enjoys a comfortable, unambitious life until the wizard Gandalf chooses him to take part in an adventure.",
+                            Title = "The Hobbit",
+                            Year = 1937
+                        },
+                        new
+                        {
+                            BookId = 12,
+                            AuthorId = 12,
+                            CategoryId = 7,
+                            CoverImage = "davincicode.jpg",
+                            Edition = "Anchor Books",
+                            ISBN = "9780307474278",
+                            Language = "English",
+                            PublisherId = 1,
+                            Status = 0,
+                            Summary = "A mystery thriller that follows symbologist Robert Langdon as he investigates a murder in the Louvre Museum.",
+                            Title = "The Da Vinci Code",
+                            Year = 2003
+                        },
+                        new
+                        {
+                            BookId = 13,
+                            AuthorId = 13,
+                            CategoryId = 1,
+                            CoverImage = "thealchemist.jpg",
+                            Edition = "HarperOne",
+                            ISBN = "9780061122415",
+                            Language = "English",
+                            PublisherId = 2,
+                            Status = 0,
+                            Summary = "A young Andalusian shepherd travels from Spain to Egypt in search of a treasure buried near the Pyramids.",
+                            Title = "The Alchemist",
+                            Year = 1988
+                        },
+                        new
+                        {
+                            BookId = 14,
+                            AuthorId = 14,
+                            CategoryId = 1,
+                            CoverImage = "onehundredyears.jpg",
+                            Edition = "Harper Perennial",
+                            ISBN = "9780060883287",
+                            Language = "English",
+                            PublisherId = 2,
+                            Status = 0,
+                            Summary = "The multi-generational story of the Buendía family, whose patriarch founded the town of Macondo.",
+                            Title = "One Hundred Years of Solitude",
+                            Year = 1967
+                        },
+                        new
+                        {
+                            BookId = 15,
+                            AuthorId = 15,
+                            CategoryId = 1,
+                            CoverImage = "beloved.jpg",
+                            Edition = "Vintage Books",
+                            ISBN = "9781400033416",
+                            Language = "English",
+                            PublisherId = 1,
+                            Status = 0,
+                            Summary = "A novel about the supernatural effects of slavery and trauma on Sethe and her family.",
+                            Title = "Beloved",
+                            Year = 1987
+                        });
                 });
 
             modelBuilder.Entity("Library_Management_Sys.Models.BorrowTransaction", b =>
@@ -137,9 +456,8 @@ namespace Library_Management_Sys.Migrations
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -172,6 +490,93 @@ namespace Library_Management_Sys.Migrations
                     b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            CategoryId = 1,
+                            Name = "Fiction"
+                        },
+                        new
+                        {
+                            CategoryId = 2,
+                            Name = "Non-Fiction"
+                        },
+                        new
+                        {
+                            CategoryId = 3,
+                            Name = "Science & Technology"
+                        },
+                        new
+                        {
+                            CategoryId = 4,
+                            Name = "Arts & Literature"
+                        },
+                        new
+                        {
+                            CategoryId = 5,
+                            Name = "History & Biography"
+                        },
+                        new
+                        {
+                            CategoryId = 6,
+                            Name = "Fantasy",
+                            ParentCategoryId = 1
+                        },
+                        new
+                        {
+                            CategoryId = 7,
+                            Name = "Mystery & Thriller",
+                            ParentCategoryId = 1
+                        },
+                        new
+                        {
+                            CategoryId = 8,
+                            Name = "Romance",
+                            ParentCategoryId = 1
+                        },
+                        new
+                        {
+                            CategoryId = 9,
+                            Name = "Science Fiction",
+                            ParentCategoryId = 1
+                        },
+                        new
+                        {
+                            CategoryId = 10,
+                            Name = "Horror",
+                            ParentCategoryId = 1
+                        },
+                        new
+                        {
+                            CategoryId = 11,
+                            Name = "Self-Help",
+                            ParentCategoryId = 2
+                        },
+                        new
+                        {
+                            CategoryId = 12,
+                            Name = "Business",
+                            ParentCategoryId = 2
+                        },
+                        new
+                        {
+                            CategoryId = 13,
+                            Name = "Health & Fitness",
+                            ParentCategoryId = 2
+                        },
+                        new
+                        {
+                            CategoryId = 14,
+                            Name = "Travel",
+                            ParentCategoryId = 2
+                        },
+                        new
+                        {
+                            CategoryId = 15,
+                            Name = "Religion & Spirituality",
+                            ParentCategoryId = 2
+                        });
                 });
 
             modelBuilder.Entity("Library_Management_Sys.Models.Member", b =>
@@ -210,6 +615,58 @@ namespace Library_Management_Sys.Migrations
                     b.HasKey("PublisherId");
 
                     b.ToTable("Publishers");
+
+                    b.HasData(
+                        new
+                        {
+                            PublisherId = 1,
+                            Name = "Penguin Random House"
+                        },
+                        new
+                        {
+                            PublisherId = 2,
+                            Name = "HarperCollins Publishers"
+                        },
+                        new
+                        {
+                            PublisherId = 3,
+                            Name = "Simon & Schuster"
+                        },
+                        new
+                        {
+                            PublisherId = 4,
+                            Name = "Macmillan Publishers"
+                        },
+                        new
+                        {
+                            PublisherId = 5,
+                            Name = "Hachette Book Group"
+                        },
+                        new
+                        {
+                            PublisherId = 6,
+                            Name = "Scholastic Corporation"
+                        },
+                        new
+                        {
+                            PublisherId = 7,
+                            Name = "Wiley"
+                        },
+                        new
+                        {
+                            PublisherId = 8,
+                            Name = "Pearson Education"
+                        },
+                        new
+                        {
+                            PublisherId = 9,
+                            Name = "Oxford University Press"
+                        },
+                        new
+                        {
+                            PublisherId = 10,
+                            Name = "Cambridge University Press"
+                        });
                 });
 
             modelBuilder.Entity("Library_Management_Sys.Models.User", b =>
