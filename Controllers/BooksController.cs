@@ -19,12 +19,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IGenericRepository<Book> _bookRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public BooksController(IGenericRepository<Book> bookRepo, IMapper mapper , IPermissionService permissionService)
+        public BooksController(IGenericRepository<Book> bookRepo, IMapper mapper , IPermissionService permissionService, IActivitylogRepository activitylogRepository)
         {
             _bookRepository = bookRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/Books
@@ -36,8 +38,16 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var booksList = await _bookRepository.GetAllAsync();
-            return Ok(_mapper.Map<List<BookDTO>>(booksList));
+            try
+            {
+                var booksList = await _bookRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Books_View);
+                return Ok(_mapper.Map<List<BookDTO>>(booksList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // GET: api/Books/5
@@ -49,14 +59,22 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var book = await _bookRepository.GetAsync(b => b.BookId == id);
-
-            if (book == null)
+            try
             {
-                return NotFound();
-            }
+                var book = await _bookRepository.GetAsync(b => b.BookId == id);
 
-            return Ok(_mapper.Map<BookDTO>(book));
+                if (book == null)
+                {
+                    return NotFound();
+                }
+
+                await _activitylogRepository.LogActivity(User, Permissions.Books_View);
+                return Ok(_mapper.Map<BookDTO>(book));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/Books
@@ -68,37 +86,45 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var book = await BookExists(bookDto.BookId);
-            if (book != null)
+            try
             {
-                if (CoverImg != null && CoverImg.Length > 0)
+                var book = await BookExists(bookDto.BookId);
+                if (book != null)
                 {
-                    // Delete old image if exists
-                    var oldImagePath = Path.Combine("wwwroot", book.CoverImage?.Split('?')[0]?.TrimStart('/'));
-                    if (System.IO.File.Exists(oldImagePath))
+                    if (CoverImg != null && CoverImg.Length > 0)
                     {
-                        System.IO.File.Delete(oldImagePath);
+                        // Delete old image if exists
+                        var oldImagePath = Path.Combine("wwwroot", book.CoverImage?.Split('?')[0]?.TrimStart('/'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                        var file = bookDto.Title.Replace(" ", "_").ToString() + Path.GetExtension(CoverImg.FileName);
+                        var filePath = Path.Combine("wwwroot/images/Books", file);
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await CoverImg.CopyToAsync(stream);
+                        }
+                        var version = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                        bookDto.CoverImage = $"/images/Books/{file}?v={version}";
                     }
-                    var file = bookDto.Title.Replace(" ", "_").ToString() + Path.GetExtension(CoverImg.FileName);
-                    var filePath = Path.Combine("wwwroot/images/Books", file);
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    else
                     {
-                        await CoverImg.CopyToAsync(stream);
+                        bookDto.CoverImage = book.CoverImage; 
                     }
-                    var version = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    bookDto.CoverImage = $"/images/Books/{file}?v={version}";
+                    await _bookRepository.UpdateAsync(_mapper.Map<Book>(bookDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.Books_Update);
+                    return Ok(new { message = "Book updated successfully" });
                 }
                 else
                 {
-                    bookDto.CoverImage = book.CoverImage; 
+                    return NotFound(new { message = "Book Not Found" });
                 }
-                await _bookRepository.UpdateAsync(_mapper.Map<Book>(bookDto));
-                return Ok(new { message = "Book updated successfully" });
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Book Not Found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
         }
 
@@ -111,30 +137,36 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (bookDto == null)
+            try
             {
-                return BadRequest();
-            }
-
-            if(CoverImg != null && CoverImg.Length > 0)
-            {
-                var file  = bookDto.Title.Replace(" ", "_").ToString() + Path.GetExtension(CoverImg.FileName);
-                var filePath = Path.Combine("wwwroot/images/Books", file);
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (bookDto == null)
                 {
-                    await CoverImg.CopyToAsync(stream);
+                    return BadRequest();
                 }
 
-                var version = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                bookDto.CoverImage = $"/images/Books/{file}?v={version}";
+                if(CoverImg != null && CoverImg.Length > 0)
+                {
+                    var file  = bookDto.Title.Replace(" ", "_").ToString() + Path.GetExtension(CoverImg.FileName);
+                    var filePath = Path.Combine("wwwroot/images/Books", file);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await CoverImg.CopyToAsync(stream);
+                    }
 
+                    var version = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    bookDto.CoverImage = $"/images/Books/{file}?v={version}";
+                }
+
+                await _bookRepository.CreateAndSaveAsync(_mapper.Map<Book>(bookDto));
+                await _activitylogRepository.LogActivity(User, Permissions.Books_Create);
+                return Ok(new { message = "Book created successfully" });
             }
-
-            await _bookRepository.CreateAndSaveAsync(_mapper.Map<Book>(bookDto));
-            return Ok(new { message = "Book created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/Books/5
@@ -146,21 +178,29 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var book = await _bookRepository.GetAsync(b => b.BookId == id);
-            if (book == null)
+            try
             {
-                return NotFound();
-            }
-            // Delete cover image file if exists
-            var imagePath = Path.Combine("wwwroot", book.CoverImage?.Split('?')[0]?.TrimStart('/'));
-            if (System.IO.File.Exists(imagePath))
-            {
-                System.IO.File.Delete(imagePath);
-            }
+                var book = await _bookRepository.GetAsync(b => b.BookId == id);
+                if (book == null)
+                {
+                    return NotFound();
+                }
+                // Delete cover image file if exists
+                var imagePath = Path.Combine("wwwroot", book.CoverImage?.Split('?')[0]?.TrimStart('/'));
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
 
                 await _bookRepository.RemoveAsync(book);
-            await _bookRepository.SaveAsync();
-            return Ok(new { message = "Book deleted successfully" });
+                await _bookRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Books_Delete);
+                return Ok(new { message = "Book deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<Book> BookExists(int id)

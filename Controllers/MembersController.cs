@@ -17,12 +17,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IGenericRepository<Member> _memberRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public MembersController(IGenericRepository<Member> memberRepo, IMapper mapper, IPermissionService permissionService)
+        public MembersController(IGenericRepository<Member> memberRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository)
         {
             _memberRepository = memberRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/Members
@@ -34,8 +36,16 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var membersList = await _memberRepository.GetAllAsync();
-            return Ok(_mapper.Map<List<MemberDTO>>(membersList));
+            try
+            {
+                var membersList = await _memberRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Members_View);
+                return Ok(_mapper.Map<List<MemberDTO>>(membersList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // GET: api/Members/5
@@ -47,14 +57,22 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var member = await _memberRepository.GetAsync(m => m.MemberId == id);
-
-            if (member == null)
+            try
             {
-                return NotFound();
-            }
+                var member = await _memberRepository.GetAsync(m => m.MemberId == id);
 
-            return Ok(_mapper.Map<MemberDTO>(member));
+                if (member == null)
+                {
+                    return NotFound();
+                }
+
+                await _activitylogRepository.LogActivity(User, Permissions.Members_View);
+                return Ok(_mapper.Map<MemberDTO>(member));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/Members
@@ -66,15 +84,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var member = await MemberExists(memberDto.MemberId);
-            if (member != null)
+            try
             {
-                await _memberRepository.UpdateAsync(_mapper.Map<Member>(memberDto));
-                return Ok(new { message = "Member updated successfully" });
+                var member = await MemberExists(memberDto.MemberId);
+                if (member != null)
+                {
+                    await _memberRepository.UpdateAsync(_mapper.Map<Member>(memberDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.Members_Update);
+                    return Ok(new { message = "Member updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Member Not Found" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Member Not Found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
         }
 
@@ -87,12 +113,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (memberDto == null)
+            try
             {
-                return BadRequest();
+                if (memberDto == null)
+                {
+                    return BadRequest();
+                }
+                await _memberRepository.CreateAndSaveAsync(_mapper.Map<Member>(memberDto));
+                await _activitylogRepository.LogActivity(User, Permissions.Members_Create);
+                return Ok(new { message = "Member created successfully" });
             }
-            await _memberRepository.CreateAndSaveAsync(_mapper.Map<Member>(memberDto));
-            return Ok(new { message = "Member created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/Members/5
@@ -104,15 +138,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var member = await _memberRepository.GetAsync(m => m.MemberId == id);
-            if (member == null)
+            try
             {
-                return NotFound();
-            }
+                var member = await _memberRepository.GetAsync(m => m.MemberId == id);
+                if (member == null)
+                {
+                    return NotFound();
+                }
 
-            await _memberRepository.RemoveAsync(member);
-            await _memberRepository.SaveAsync();
-            return Ok(new { message = "Member deleted successfully" });
+                await _memberRepository.RemoveAsync(member);
+                await _memberRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Members_Delete);
+                return Ok(new { message = "Member deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<Member> MemberExists(int id)

@@ -23,12 +23,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IGenericRepository<Category> _categoryRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public CategoriesController(IGenericRepository<Category> categoryRepo, IMapper mapper, IPermissionService permissionService)
+        public CategoriesController(IGenericRepository<Category> categoryRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository)
         {
             _categoryRepository = categoryRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/Categories
@@ -40,9 +42,16 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var CategoriesList = await _categoryRepository.GetAllAsync();
-            return Ok(_mapper.Map<List<CategoryDTO>>(CategoriesList));
-
+            try
+            {
+                var CategoriesList = await _categoryRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Categories_View);
+                return Ok(_mapper.Map<List<CategoryDTO>>(CategoriesList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // GET: api/Categories/5
@@ -54,14 +63,22 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
-
-            if (category == null)
+            try
             {
-                return NotFound();
-            }
+                var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
 
-            return Ok(_mapper.Map<CategoryDTO>(category));
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                await _activitylogRepository.LogActivity(User, Permissions.Categories_View);
+                return Ok(_mapper.Map<CategoryDTO>(category));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/Categories
@@ -73,18 +90,24 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var category = await CategoryExists(categoryDto.CategoryId);
-            if (category != null)
+            try
             {
-                await _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto));
-                return Ok(new { message = "Category updated successfully" });
+                var category = await CategoryExists(categoryDto.CategoryId);
+                if (category != null)
+                {
+                    await _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.Categories_Update);
+                    return Ok(new { message = "Category updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Category Not Found" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Category Not Found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-
-            
         }
 
         // POST: api/Categories
@@ -96,12 +119,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (categoryDto == null)
+            try
             {
-                return BadRequest();
+                if (categoryDto == null)
+                {
+                    return BadRequest();
+                }
+                await _categoryRepository.CreateAndSaveAsync(_mapper.Map<Category>(categoryDto));
+                await _activitylogRepository.LogActivity(User, Permissions.Categories_Create);
+                return Ok(new { message = "Category created successfully" });
             }
-            await _categoryRepository.CreateAndSaveAsync(_mapper.Map<Category>(categoryDto));
-            return Ok(new { message = "Category created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/Categories/5
@@ -113,15 +144,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
-            if (category == null)
+            try
             {
-                return NotFound();
-            }
+                var category = await _categoryRepository.GetAsync(p => p.CategoryId == id);
+                if (category == null)
+                {
+                    return NotFound();
+                }
 
-            await _categoryRepository.RemoveAsync(category);
-            await _categoryRepository.SaveAsync();
-            return Ok(new { message = "Category deleted successfully" });
+                await _categoryRepository.RemoveAsync(category);
+                await _categoryRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Categories_Delete);
+                return Ok(new { message = "Category deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<Category> CategoryExists(int id)

@@ -23,12 +23,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IBorrowTransactionRepository _borrowTransactionRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper, IPermissionService permissionService)
+        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository)
         {
             _borrowTransactionRepository = borrowTransactionRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/BorrowTransactions
@@ -40,7 +42,16 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            return Ok(await _borrowTransactionRepository.GetAllAsync());
+            try
+            {
+                var transactions = await _borrowTransactionRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_View);
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // GET: api/BorrowTransactions/5
@@ -52,11 +63,24 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (id == 0 || id == null)
+            try
             {
-                return BadRequest();
+                if (id == 0 || id == null)
+                {
+                    return BadRequest();
+                }
+                var transaction = await _borrowTransactionRepository.BorrowTransactionExists(id);
+                if (transaction == null)
+                {
+                    return NotFound();
+                }
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_View);
+                return Ok(transaction);
             }
-            return Ok(await _borrowTransactionRepository.BorrowTransactionExists(id));
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         //GET: api/BorrowTransactions/Member/5
@@ -68,16 +92,24 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (memberId == 0 || memberId == null)
+            try
             {
-                return BadRequest();
+                if (memberId == 0 || memberId == null)
+                {
+                    return BadRequest();
+                }
+                var transactions = await _borrowTransactionRepository.GetAllTransactionsByMember(memberId);
+                if (transactions == null || !transactions.Any())
+                {
+                    return NotFound(new { message = "No borrow transactions found for the specified member." });
+                }
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_View);
+                return Ok(transactions);
             }
-            var transactions = await _borrowTransactionRepository.GetAllTransactionsByMember(memberId);
-            if (transactions == null || !transactions.Any())
+            catch (Exception ex)
             {
-                return NotFound(new { message = "No borrow transactions found for the specified member." });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-            return Ok(transactions);
         }
 
         //GET: api/BorrowTransactions/Book/5
@@ -89,16 +121,24 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (bookId == 0 || bookId == null)
+            try
             {
-                return BadRequest();
+                if (bookId == 0 || bookId == null)
+                {
+                    return BadRequest();
+                }
+                var transactions = await _borrowTransactionRepository.GetAllTransactionsByBook(bookId);
+                if (transactions == null || !transactions.Any())
+                {
+                    return NotFound(new { message = "No borrow transactions found for the specified book." });
+                }
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_View);
+                return Ok(transactions);
             }
-            var transactions = await _borrowTransactionRepository.GetAllTransactionsByBook(bookId);
-            if (transactions == null || !transactions.Any())
+            catch (Exception ex)
             {
-                return NotFound(new { message = "No borrow transactions found for the specified book." });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-            return Ok(transactions);
         }
 
         //PUT: api/BorrowTransactions/Return/5
@@ -110,17 +150,25 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var transaction = await BorrowTransactionExists(id);
-            if (transaction == null)
+            try
             {
-                return NotFound(new { message = "Borrow transaction not found" });
+                var transaction = await BorrowTransactionExists(id);
+                if (transaction == null)
+                {
+                    return NotFound(new { message = "Borrow transaction not found" });
+                }
+                if (transaction.ReturnDate != null)
+                {
+                    return BadRequest(new { message = "Book has already been returned" });
+                }
+                await _borrowTransactionRepository.ReturnBook(id);
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Update);
+                return Ok(new { message = "Book returned successfully" });
             }
-            if (transaction.ReturnDate != null)
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "Book has already been returned" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-            await _borrowTransactionRepository.ReturnBook(id);
-            return Ok(new { message = "Book returned successfully" });
         }
 
         //PUT: api/BorrowTransactions/Renew/5
@@ -132,21 +180,29 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var transaction = await BorrowTransactionExists(id);
-            if (transaction == null)
+            try
             {
-                return NotFound(new { message = "Borrow transaction not found" });
+                var transaction = await BorrowTransactionExists(id);
+                if (transaction == null)
+                {
+                    return NotFound(new { message = "Borrow transaction not found" });
+                }
+                if (transaction.ReturnDate != null)
+                {
+                    return BadRequest(new { message = "Cannot renew a returned book" });
+                }
+                if (transaction.ReturnDate >= newDueDate)
+                {
+                    return BadRequest(new { message = "New due date must be later than the current due date" });
+                }
+                await _borrowTransactionRepository.RenewBorrowing(id, newDueDate);
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Update);
+                return Ok(new { message = "Borrowing renewed successfully" });
             }
-            if (transaction.ReturnDate != null)
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "Cannot renew a returned book" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-            if (transaction.ReturnDate >= newDueDate)
-            {
-                return BadRequest(new { message = "New due date must be later than the current due date" });
-            }
-            await _borrowTransactionRepository.RenewBorrowing(id, newDueDate);
-            return Ok(new { message = "Borrowing renewed successfully" });
         }
 
         //PUT: api/BorrowTransactions/Overdue
@@ -158,12 +214,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (id == 0 || id == null)
+            try
             {
-                return BadRequest();
+                if (id == 0 || id == null)
+                {
+                    return BadRequest();
+                }
+                await _borrowTransactionRepository.overdueBook(id);
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Update);
+                return Ok(new { message = "Transaction marked as overdue if applicable" });
             }
-            await _borrowTransactionRepository.overdueBook(id);
-            return Ok(new { message = "Transaction marked as overdue if applicable" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/BorrowTransactions
@@ -175,15 +239,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var transaction = await BorrowTransactionExists(transactionDto.Id);
-            if (transaction != null)
+            try
             {
-                await _borrowTransactionRepository.UpdateAsync(_mapper.Map<BorrowTransaction>(transactionDto));
-                return Ok(new { message = "Borrow transaction updated successfully" });
+                var transaction = await BorrowTransactionExists(transactionDto.Id);
+                if (transaction != null)
+                {
+                    await _borrowTransactionRepository.UpdateAsync(_mapper.Map<BorrowTransaction>(transactionDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Update);
+                    return Ok(new { message = "Borrow transaction updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Borrow transaction not found" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Borrow transaction not found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
         }
 
@@ -196,12 +268,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (transactionDto == null)
+            try
             {
-                return BadRequest();
+                if (transactionDto == null)
+                {
+                    return BadRequest();
+                }
+                await _borrowTransactionRepository.CreateAndSaveAsync(_mapper.Map<BorrowTransaction>(transactionDto));
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Create);
+                return Ok(new { message = "Borrow transaction created successfully" });
             }
-            await _borrowTransactionRepository.CreateAndSaveAsync(_mapper.Map<BorrowTransaction>(transactionDto));
-            return Ok(new { message = "Borrow transaction created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/BorrowTransactions/5
@@ -213,15 +293,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var transaction = await _borrowTransactionRepository.GetAsync(t => t.Id == id);
-            if (transaction == null)
+            try
             {
-                return NotFound();
-            }
+                var transaction = await _borrowTransactionRepository.GetAsync(t => t.Id == id);
+                if (transaction == null)
+                {
+                    return NotFound();
+                }
 
-            await _borrowTransactionRepository.RemoveAsync(transaction);
-            await _borrowTransactionRepository.SaveAsync();
-            return Ok(new { message = "Borrow transaction deleted successfully" });
+                await _borrowTransactionRepository.RemoveAsync(transaction);
+                await _borrowTransactionRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Delete);
+                return Ok(new { message = "Borrow transaction deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<BorrowTransaction> BorrowTransactionExists(int id)

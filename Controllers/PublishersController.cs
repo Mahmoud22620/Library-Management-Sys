@@ -23,12 +23,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IGenericRepository<Publisher> _publisherRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public PublishersController(IGenericRepository<Publisher> publisherRepo, IMapper mapper, IPermissionService permissionService)
+        public PublishersController(IGenericRepository<Publisher> publisherRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository)
         {
             _publisherRepository = publisherRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/Publishers
@@ -40,8 +42,16 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var publishersList = await _publisherRepository.GetAllAsync();
-            return Ok(_mapper.Map<List<PublisherDTO>>(publishersList));
+            try
+            {
+                var publishersList = await _publisherRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Publishers_View);
+                return Ok(_mapper.Map<List<PublisherDTO>>(publishersList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // GET: api/Publishers/5
@@ -53,14 +63,22 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
-
-            if (publisher == null)
+            try
             {
-                return NotFound();
-            }
+                var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
 
-            return Ok(_mapper.Map<PublisherDTO>(publisher));
+                if (publisher == null)
+                {
+                    return NotFound();
+                }
+
+                await _activitylogRepository.LogActivity(User, Permissions.Publishers_View);
+                return Ok(_mapper.Map<PublisherDTO>(publisher));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/Publishers
@@ -72,15 +90,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var publisher = await PublisherExists(publisherDto.PublisherId);
-            if (publisher != null)
+            try
             {
-                await _publisherRepository.UpdateAsync(_mapper.Map<Publisher>(publisherDto));
-                return Ok(new { message = "Publisher updated successfully" });
+                var publisher = await PublisherExists(publisherDto.PublisherId);
+                if (publisher != null)
+                {
+                    await _publisherRepository.UpdateAsync(_mapper.Map<Publisher>(publisherDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.Publishers_Update);
+                    return Ok(new { message = "Publisher updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Publisher Not Found" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Publisher Not Found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
         }
 
@@ -93,12 +119,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (publisherDto == null)
+            try
             {
-                return BadRequest();
+                if (publisherDto == null)
+                {
+                    return BadRequest();
+                }
+                await _publisherRepository.CreateAndSaveAsync(_mapper.Map<Publisher>(publisherDto));
+                await _activitylogRepository.LogActivity(User, Permissions.Publishers_Create);
+                return Ok(new { message = "Publisher created successfully" });
             }
-            await _publisherRepository.CreateAndSaveAsync(_mapper.Map<Publisher>(publisherDto));
-            return Ok(new { message = "Publisher created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/Publishers/5
@@ -110,15 +144,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
-            if (publisher == null)
+            try
             {
-                return NotFound();
-            }
+                var publisher = await _publisherRepository.GetAsync(p => p.PublisherId == id);
+                if (publisher == null)
+                {
+                    return NotFound();
+                }
 
-            await _publisherRepository.RemoveAsync(publisher);
-            await _publisherRepository.SaveAsync();
-            return Ok(new { message = "Publisher deleted successfully" });
+                await _publisherRepository.RemoveAsync(publisher);
+                await _publisherRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Publishers_Delete);
+                return Ok(new { message = "Publisher deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<Publisher> PublisherExists(int id)

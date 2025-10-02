@@ -14,17 +14,6 @@
     }
 
 
-    public enum  Actions
-    {
-        Create=0,
-        Update,
-        Delete,
-        insert,
-        Borrow,
-        Return
-
-    }
-
     [Flags]
     public enum Permissions
     {

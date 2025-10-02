@@ -23,12 +23,14 @@ namespace Library_Management_Sys.Controllers
         private readonly IGenericRepository<Author> _authorRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
+        private readonly IActivitylogRepository _activitylogRepository;
 
-        public AuthorsController(IGenericRepository<Author> authorRepo, IMapper mapper , IPermissionService permissionService)
+        public AuthorsController(IGenericRepository<Author> authorRepo, IMapper mapper , IPermissionService permissionService , IActivitylogRepository activitylogRepository)
         {
             _authorRepository = authorRepo;
             _mapper = mapper;
             _permissionService = permissionService;
+            _activitylogRepository = activitylogRepository;
         }
 
         // GET: api/Authors
@@ -40,28 +42,44 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var authorsList = await _authorRepository.GetAllAsync();
-            return Ok(_mapper.Map<List<AuthorDTO>>(authorsList));
+            try
+            {
+                var authorsList = await _authorRepository.GetAllAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Authors_View);
+                return Ok(_mapper.Map<List<AuthorDTO>>(authorsList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
+
         }
 
         // GET: api/Authors/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AuthorDTO>> GetAuthor(int id)
         {
-
             bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Authors_View);
             if (!Allowed)
             {
                 return Forbid();
             }
-            var author = await _authorRepository.GetAsync(a => a.AuthorId == id);
-
-            if (author == null)
+            try
             {
-                return NotFound();
-            }
+                var author = await _authorRepository.GetAsync(a => a.AuthorId == id);
 
-            return Ok(_mapper.Map<AuthorDTO>(author));
+                if (author == null)
+                {
+                    return NotFound();
+                }
+
+                await _activitylogRepository.LogActivity(User, Permissions.Authors_View);
+                return Ok(_mapper.Map<AuthorDTO>(author));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // PUT: api/Authors
@@ -73,15 +91,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var author = await AuthorExists(authorDto.AuthorId);
-            if (author != null)
+            try
             {
-                await _authorRepository.UpdateAsync(_mapper.Map<Author>(authorDto));
-                return Ok(new { message = "Author updated successfully" });
+                var author = await AuthorExists(authorDto.AuthorId);
+                if (author != null)
+                {
+                    await _authorRepository.UpdateAsync(_mapper.Map<Author>(authorDto));
+                    await _activitylogRepository.LogActivity(User, Permissions.Authors_Update);
+                    return Ok(new { message = "Author updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Author Not Found" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { message = "Author Not Found" });
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
         }
 
@@ -94,12 +120,20 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            if (authorDto == null)
+            try
             {
-                return BadRequest();
+                if (authorDto == null)
+                {
+                    return BadRequest();
+                }
+                await _authorRepository.CreateAndSaveAsync(_mapper.Map<Author>(authorDto));
+                await _activitylogRepository.LogActivity(User, Permissions.Authors_Create);
+                return Ok(new { message = "Author created successfully" });
             }
-            await _authorRepository.CreateAndSaveAsync(_mapper.Map<Author>(authorDto));
-            return Ok(new { message = "Author created successfully" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         // DELETE: api/Authors/5
@@ -111,15 +145,23 @@ namespace Library_Management_Sys.Controllers
             {
                 return Forbid();
             }
-            var author = await _authorRepository.GetAsync(a => a.AuthorId == id);
-            if (author == null)
+            try
             {
-                return NotFound();
-            }
+                var author = await _authorRepository.GetAsync(a => a.AuthorId == id);
+                if (author == null)
+                {
+                    return NotFound();
+                }
 
-            await _authorRepository.RemoveAsync(author);
-            await _authorRepository.SaveAsync();
-            return Ok(new { message = "Author deleted successfully" });
+                await _authorRepository.RemoveAsync(author);
+                await _authorRepository.SaveAsync();
+                await _activitylogRepository.LogActivity(User, Permissions.Authors_Delete);
+                return Ok(new { message = "Author deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
         }
 
         private async Task<Author> AuthorExists(int id)
