@@ -22,21 +22,6 @@ namespace Library_Management_Sys.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AuthorBook", b =>
-                {
-                    b.Property<int>("AuthorsAuthorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BooksBookId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AuthorsAuthorId", "BooksBookId");
-
-                    b.HasIndex("BooksBookId");
-
-                    b.ToTable("BookAuthors", (string)null);
-                });
-
             modelBuilder.Entity("Library_Management_Sys.Models.Author", b =>
                 {
                     b.Property<int>("AuthorId")
@@ -158,9 +143,6 @@ namespace Library_Management_Sys.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookId"));
 
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("int");
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -209,7 +191,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 1,
-                            AuthorId = 1,
                             CategoryId = 6,
                             CoverImage = "harrypotter1.jpg",
                             Edition = "1st Edition",
@@ -224,7 +205,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 2,
-                            AuthorId = 2,
                             CategoryId = 10,
                             CoverImage = "theshining.jpg",
                             Edition = "1st Edition",
@@ -239,7 +219,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 3,
-                            AuthorId = 3,
                             CategoryId = 7,
                             CoverImage = "orientexpress.jpg",
                             Edition = "Reprint Edition",
@@ -254,7 +233,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 4,
-                            AuthorId = 4,
                             CategoryId = 9,
                             CoverImage = "1984.jpg",
                             Edition = "Signet Classic",
@@ -269,7 +247,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 5,
-                            AuthorId = 5,
                             CategoryId = 8,
                             CoverImage = "prideandprejudice.jpg",
                             Edition = "Penguin Classics",
@@ -284,7 +261,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 6,
-                            AuthorId = 6,
                             CategoryId = 1,
                             CoverImage = "tomsawyer.jpg",
                             Edition = "Dover Thrift Editions",
@@ -299,7 +275,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 7,
-                            AuthorId = 7,
                             CategoryId = 1,
                             CoverImage = "taleoftwocities.jpg",
                             Edition = "Dover Thrift Editions",
@@ -314,7 +289,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 8,
-                            AuthorId = 8,
                             CategoryId = 1,
                             CoverImage = "oldmanandthesea.jpg",
                             Edition = "Scribner",
@@ -329,7 +303,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 9,
-                            AuthorId = 9,
                             CategoryId = 1,
                             CoverImage = "greatgatsby.jpg",
                             Edition = "Scribner",
@@ -344,7 +317,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 10,
-                            AuthorId = 10,
                             CategoryId = 1,
                             CoverImage = "tokillamockingbird.jpg",
                             Edition = "Harper Perennial",
@@ -359,7 +331,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 11,
-                            AuthorId = 11,
                             CategoryId = 6,
                             CoverImage = "thehobbit.jpg",
                             Edition = "Houghton Mifflin Harcourt",
@@ -374,7 +345,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 12,
-                            AuthorId = 12,
                             CategoryId = 7,
                             CoverImage = "davincicode.jpg",
                             Edition = "Anchor Books",
@@ -389,7 +359,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 13,
-                            AuthorId = 13,
                             CategoryId = 1,
                             CoverImage = "thealchemist.jpg",
                             Edition = "HarperOne",
@@ -404,7 +373,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 14,
-                            AuthorId = 14,
                             CategoryId = 1,
                             CoverImage = "onehundredyears.jpg",
                             Edition = "Harper Perennial",
@@ -419,7 +387,6 @@ namespace Library_Management_Sys.Migrations
                         new
                         {
                             BookId = 15,
-                            AuthorId = 15,
                             CategoryId = 1,
                             CoverImage = "beloved.jpg",
                             Edition = "Vintage Books",
@@ -430,6 +397,113 @@ namespace Library_Management_Sys.Migrations
                             Summary = "A novel about the supernatural effects of slavery and trauma on Sethe and her family.",
                             Title = "Beloved",
                             Year = 1987
+                        });
+                });
+
+            modelBuilder.Entity("Library_Management_Sys.Models.BookAuthor", b =>
+                {
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookId", "AuthorId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("BookAuthor");
+
+                    b.HasData(
+                        new
+                        {
+                            BookId = 1,
+                            AuthorId = 1
+                        },
+                        new
+                        {
+                            BookId = 2,
+                            AuthorId = 2
+                        },
+                        new
+                        {
+                            BookId = 3,
+                            AuthorId = 3
+                        },
+                        new
+                        {
+                            BookId = 4,
+                            AuthorId = 4
+                        },
+                        new
+                        {
+                            BookId = 5,
+                            AuthorId = 5
+                        },
+                        new
+                        {
+                            BookId = 6,
+                            AuthorId = 6
+                        },
+                        new
+                        {
+                            BookId = 7,
+                            AuthorId = 7
+                        },
+                        new
+                        {
+                            BookId = 8,
+                            AuthorId = 8
+                        },
+                        new
+                        {
+                            BookId = 9,
+                            AuthorId = 9
+                        },
+                        new
+                        {
+                            BookId = 10,
+                            AuthorId = 10
+                        },
+                        new
+                        {
+                            BookId = 11,
+                            AuthorId = 11
+                        },
+                        new
+                        {
+                            BookId = 12,
+                            AuthorId = 12
+                        },
+                        new
+                        {
+                            BookId = 13,
+                            AuthorId = 13
+                        },
+                        new
+                        {
+                            BookId = 14,
+                            AuthorId = 14
+                        },
+                        new
+                        {
+                            BookId = 15,
+                            AuthorId = 15
+                        },
+                        new
+                        {
+                            BookId = 1,
+                            AuthorId = 11
+                        },
+                        new
+                        {
+                            BookId = 2,
+                            AuthorId = 12
+                        },
+                        new
+                        {
+                            BookId = 3,
+                            AuthorId = 13
                         });
                 });
 
@@ -447,9 +521,6 @@ namespace Library_Management_Sys.Migrations
                     b.Property<DateTime>("BorrowDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("BorrowTransactionId")
-                        .HasColumnType("int");
-
                     b.Property<int>("MemberId")
                         .HasColumnType("int");
 
@@ -462,8 +533,6 @@ namespace Library_Management_Sys.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BookId");
-
-                    b.HasIndex("BorrowTransactionId");
 
                     b.HasIndex("MemberId");
 
@@ -923,21 +992,6 @@ namespace Library_Management_Sys.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AuthorBook", b =>
-                {
-                    b.HasOne("Library_Management_Sys.Models.Author", null)
-                        .WithMany()
-                        .HasForeignKey("AuthorsAuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Library_Management_Sys.Models.Book", null)
-                        .WithMany()
-                        .HasForeignKey("BooksBookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Library_Management_Sys.Models.Book", b =>
                 {
                     b.HasOne("Library_Management_Sys.Models.Category", "Category")
@@ -957,6 +1011,25 @@ namespace Library_Management_Sys.Migrations
                     b.Navigation("Publisher");
                 });
 
+            modelBuilder.Entity("Library_Management_Sys.Models.BookAuthor", b =>
+                {
+                    b.HasOne("Library_Management_Sys.Models.Author", "Author")
+                        .WithMany("Books")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Library_Management_Sys.Models.Book", "Book")
+                        .WithMany("Authors")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("Library_Management_Sys.Models.BorrowTransaction", b =>
                 {
                     b.HasOne("Library_Management_Sys.Models.Book", "book")
@@ -964,10 +1037,6 @@ namespace Library_Management_Sys.Migrations
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Library_Management_Sys.Models.BorrowTransaction", null)
-                        .WithMany("BorrowTransactions")
-                        .HasForeignKey("BorrowTransactionId");
 
                     b.HasOne("Library_Management_Sys.Models.Member", "member")
                         .WithMany("BorrowTransactions")
@@ -1052,13 +1121,15 @@ namespace Library_Management_Sys.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Library_Management_Sys.Models.Book", b =>
+            modelBuilder.Entity("Library_Management_Sys.Models.Author", b =>
                 {
-                    b.Navigation("BorrowTransactions");
+                    b.Navigation("Books");
                 });
 
-            modelBuilder.Entity("Library_Management_Sys.Models.BorrowTransaction", b =>
+            modelBuilder.Entity("Library_Management_Sys.Models.Book", b =>
                 {
+                    b.Navigation("Authors");
+
                     b.Navigation("BorrowTransactions");
                 });
 

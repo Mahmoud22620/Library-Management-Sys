@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 using Library_Management_Sys.Models.Enums;
+using Library_Management_Sys.Models;
 
 namespace Library_Management_Sys.Models
 {
@@ -26,9 +27,21 @@ namespace Library_Management_Sys.Models
                 .WithOne(ul => ul.user)
                 .HasForeignKey(ul => ul.UserId);
 
-            builder.Entity<Book>().HasMany(b => b.Authors).WithMany(a => a.Books).UsingEntity(j => j.ToTable("BookAuthors"));
             builder.Entity<Book>().HasOne(b => b.Category).WithMany(c => c.Books).HasForeignKey(b => b.CategoryId).OnDelete(DeleteBehavior.Restrict);
             builder.Entity<Book>().HasOne(b => b.Publisher).WithMany(p => p.Books).HasForeignKey(b => b.PublisherId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<BookAuthor>()
+                 .HasKey(ba => new { ba.BookId, ba.AuthorId }); // Composite key
+
+            builder.Entity<BookAuthor>()
+                .HasOne(ba => ba.Book)
+                .WithMany(b => b.Authors)
+                .HasForeignKey(ba => ba.BookId);
+
+            builder.Entity<BookAuthor>()
+                .HasOne(ba => ba.Author)
+                .WithMany(a => a.Books)
+                .HasForeignKey(ba => ba.AuthorId);
 
             builder.Entity<BorrowTransaction>().HasOne(bt => bt.book)
                 .WithMany(b => b.BorrowTransactions)
@@ -123,7 +136,7 @@ namespace Library_Management_Sys.Models
                 new Category { CategoryId = 15, Name = "Religion & Spirituality", ParentCategoryId = 2 }
             );
 
-            // Seed Books
+            // Seed Books 
             builder.Entity<Book>().HasData(
                 new Book 
                 { 
@@ -137,8 +150,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 6, 
-                    PublisherId = 1, 
-                    AuthorId = 1 
+                    PublisherId = 1
                 },
                 new Book 
                 { 
@@ -152,8 +164,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 10, 
-                    PublisherId = 2, 
-                    AuthorId = 2 
+                    PublisherId = 2
                 },
                 new Book 
                 { 
@@ -167,8 +178,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 7, 
-                    PublisherId = 2, 
-                    AuthorId = 3 
+                    PublisherId = 2
                 },
                 new Book 
                 { 
@@ -182,8 +192,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 9, 
-                    PublisherId = 3, 
-                    AuthorId = 4 
+                    PublisherId = 3
                 },
                 new Book 
                 { 
@@ -197,8 +206,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 8, 
-                    PublisherId = 1, 
-                    AuthorId = 5 
+                    PublisherId = 1
                 },
                 new Book 
                 { 
@@ -212,8 +220,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 4, 
-                    AuthorId = 6 
+                    PublisherId = 4
                 },
                 new Book 
                 { 
@@ -227,8 +234,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 4, 
-                    AuthorId = 7 
+                    PublisherId = 4
                 },
                 new Book 
                 { 
@@ -242,8 +248,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 3, 
-                    AuthorId = 8 
+                    PublisherId = 3
                 },
                 new Book 
                 { 
@@ -257,8 +262,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 3, 
-                    AuthorId = 9 
+                    PublisherId = 3
                 },
                 new Book 
                 { 
@@ -272,8 +276,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 2, 
-                    AuthorId = 10 
+                    PublisherId = 2
                 },
                 new Book 
                 { 
@@ -287,8 +290,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 6, 
-                    PublisherId = 5, 
-                    AuthorId = 11 
+                    PublisherId = 5
                 },
                 new Book 
                 { 
@@ -302,8 +304,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 7, 
-                    PublisherId = 1, 
-                    AuthorId = 12 
+                    PublisherId = 1
                 },
                 new Book 
                 { 
@@ -317,8 +318,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 2, 
-                    AuthorId = 13 
+                    PublisherId = 2
                 },
                 new Book 
                 { 
@@ -332,8 +332,7 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 2, 
-                    AuthorId = 14 
+                    PublisherId = 2
                 },
                 new Book 
                 { 
@@ -347,10 +346,61 @@ namespace Library_Management_Sys.Models
                     Language = "English", 
                     Status = BookStatus.inStock, 
                     CategoryId = 1, 
-                    PublisherId = 1, 
-                    AuthorId = 15 
+                    PublisherId = 1
                 }
             );
+
+            // Seed BookAuthors junction table (Many-to-Many relationship)
+            builder.Entity<BookAuthor>().HasData(
+                // Harry Potter and the Philosopher's Stone - J.K. Rowling
+                new { BookId = 1, AuthorId = 1 },
+                
+                // The Shining - Stephen King
+                new { BookId = 2, AuthorId = 2 },
+                
+                // Murder on the Orient Express - Agatha Christie
+                new { BookId = 3, AuthorId = 3 },
+                
+                // 1984 - George Orwell
+                new { BookId = 4, AuthorId = 4 },
+                
+                // Pride and Prejudice - Jane Austen
+                new { BookId = 5, AuthorId = 5 },
+                
+                // The Adventures of Tom Sawyer - Mark Twain
+                new { BookId = 6, AuthorId = 6 },
+                
+                // A Tale of Two Cities - Charles Dickens
+                new { BookId = 7, AuthorId = 7 },
+                
+                // The Old Man and the Sea - Ernest Hemingway
+                new { BookId = 8, AuthorId = 8 },
+                
+                // The Great Gatsby - F. Scott Fitzgerald
+                new { BookId = 9, AuthorId = 9 },
+                
+                // To Kill a Mockingbird - Harper Lee
+                new { BookId = 10, AuthorId = 10 },
+                
+                // The Hobbit - J.R.R. Tolkien
+                new { BookId = 11, AuthorId = 11 },
+                
+                // The Da Vinci Code - Dan Brown
+                new { BookId = 12, AuthorId = 12 },
+                
+                // The Alchemist - Paulo Coelho
+                new { BookId = 13, AuthorId = 13 },
+                
+                // One Hundred Years of Solitude - Gabriel García Márquez
+                new { BookId = 14, AuthorId = 14 },
+                
+                // Beloved - Toni Morrison
+                new { BookId = 15, AuthorId = 15 },
+                new { BookId = 1, AuthorId = 11 },
+                new { BookId = 2, AuthorId = 12 },
+                new { BookId = 3, AuthorId = 13 }
+            );
         }
+        public DbSet<Library_Management_Sys.Models.BookAuthor> BookAuthor { get; set; } = default!;
     }
 }

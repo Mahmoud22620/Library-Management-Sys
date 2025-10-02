@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 
 namespace Library_Management_Sys
 {
@@ -55,6 +58,9 @@ namespace Library_Management_Sys
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IPermissionService, PermissionService>();
             builder.Services.AddScoped<IActivitylogRepository, ActivitylogRepository>();
+            builder.Services.AddScoped<IBooksRepository, BooksRepository>();
+            builder.Services.AddScoped<IBorrowTransactionRepository, BorrowTransactionRepository>();
+            builder.Services.AddScoped<IBookAuthorsRepository, BookAuthorsRepository>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -63,7 +69,7 @@ namespace Library_Management_Sys
 
             builder.Services.AddEndpointsApiExplorer();
             
-            // Configure Swagger with JWT Authentication
+            // Configure Swagger with JWT Authentication and simplified File Upload Support
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo 
@@ -97,6 +103,16 @@ namespace Library_Management_Sys
                         new string[] {}
                     }
                 });
+
+                // Configure IFormFile type mapping
+                c.MapType<IFormFile>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
+
+                // Ignore properties that cause issues in Swagger
+                c.SchemaFilter<IgnoreVirtualPropertiesSchemaFilter>();
             });
 
             var app = builder.Build();
@@ -110,6 +126,9 @@ namespace Library_Management_Sys
 
             app.UseHttpsRedirection();
 
+            // Serve static files (IMPORTANT: This must be before Authentication)
+            app.UseStaticFiles();
+
             // Add Authentication and Authorization middleware
             app.UseAuthentication();
             app.UseAuthorization();
@@ -119,4 +138,29 @@ namespace Library_Management_Sys
             app.Run();
         }
     }
+
+    // Schema filter to ignore virtual properties that cause circular references
+    public class IgnoreVirtualPropertiesSchemaFilter : ISchemaFilter
+    {
+        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (schema?.Properties == null) return;
+
+            var excludedProperties = context.Type.GetProperties()
+                .Where(t => t.GetGetMethod()?.IsVirtual == true)
+                .Select(d => d.Name);
+
+            foreach (var excludedProperty in excludedProperties)
+            {
+                var propertyToHide = schema.Properties.Keys
+                    .SingleOrDefault(x => string.Equals(x, excludedProperty, StringComparison.OrdinalIgnoreCase));
+
+                if (propertyToHide != null)
+                {
+                    schema.Properties.Remove(propertyToHide);
+                }
+            }
+        }
+    }
 }
+                        

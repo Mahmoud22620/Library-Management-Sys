@@ -19,7 +19,13 @@ namespace Library_Management_Sys.Repositories
 
         public Task BorrowBook(BorrowTransactionDTO borrowTransactionDto)
         {
-            throw new NotImplementedException();
+            var transaction = _mapper.Map<BorrowTransaction>(borrowTransactionDto);
+            transaction.BookId = borrowTransactionDto.BookId;
+            transaction.MemberId = borrowTransactionDto.MemberId;
+            transaction.Status = BorrowTransStatus.Borrowed;
+            transaction.BorrowDate = DateTime.UtcNow;
+            transaction.ReturnDate = borrowTransactionDto.ReturnDate;   
+            return CreateAndSaveAsync(transaction);
         }
 
         public async Task<BorrowTransactionDTO> BorrowTransactionExists(int id)

@@ -12,7 +12,7 @@ namespace Library_Management_Sys.Models
         [Required]
         public string Bio { get; set; }
 
-        public virtual ICollection<Book> Books { get; set; }
+        public virtual ICollection<BookAuthor> Books { get; set; }
 
     }
 }

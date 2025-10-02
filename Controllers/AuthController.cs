@@ -1,6 +1,7 @@
 ﻿using Library_Management_Sys.Models;
 using Library_Management_Sys.Models.DTOs;
 using Library_Management_Sys.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -44,6 +45,7 @@ namespace Library_Management_Sys.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("AssignRole")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleDTO RoleForm)
         {

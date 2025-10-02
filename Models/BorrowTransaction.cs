@@ -22,8 +22,5 @@ namespace Library_Management_Sys.Models
         public BorrowTransStatus Status { get; set; } = BorrowTransStatus.Borrowed;
         public virtual Book book { get; set; }
         public virtual Member member { get; set; }
-
-        public virtual ICollection<BorrowTransaction> BorrowTransactions { get; set; }
-
     }
 }

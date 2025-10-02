@@ -28,15 +28,10 @@ namespace Library_Management_Sys.Models
         [ForeignKey("Publisher")]
         public int PublisherId { get; set; }
 
-        [ForeignKey("Authors")]
-
-        public int AuthorId { get; set; }
-
-
         public virtual Category Category { get; set; }
         public virtual Publisher Publisher { get; set; }
 
-        public virtual ICollection<Author> Authors { get; set; }
+        public virtual ICollection<BookAuthor> Authors { get; set; }
 
         public virtual ICollection<BorrowTransaction> BorrowTransactions { get; set; } 
         

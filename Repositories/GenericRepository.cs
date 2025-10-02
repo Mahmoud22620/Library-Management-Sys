@@ -45,13 +45,10 @@ namespace Library_Management_Sys.Repositories
                 return await query.ToListAsync();
             }
 
-            public async Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracking = true, params Expression<Func<T, object>>[] includeProperties)
+            public async Task<T> GetAsync(Expression<Func<T, bool>> filter = null, params Expression<Func<T, object>>[] includeProperties)
             {
                 IQueryable<T> query = dbSet;
-                if (!tracking)
-                {
-                    query = query.AsNoTracking();
-                }
+               
                 if (filter != null)
                 {
                     query = query.Where(filter);

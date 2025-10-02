@@ -6,8 +6,7 @@ using Library_Management_Sys.Repositories.Interfaces;
 using Library_Management_Sys.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library_Management_Sys.Controllers
 {
@@ -16,12 +15,12 @@ namespace Library_Management_Sys.Controllers
     [Authorize]
     public class BooksController : ControllerBase
     {
-        private readonly IGenericRepository<Book> _bookRepository;
+        private readonly IBooksRepository _bookRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
         private readonly IActivitylogRepository _activitylogRepository;
 
-        public BooksController(IGenericRepository<Book> bookRepo, IMapper mapper , IPermissionService permissionService, IActivitylogRepository activitylogRepository)
+        public BooksController(IBooksRepository bookRepo, IMapper mapper , IPermissionService permissionService, IActivitylogRepository activitylogRepository )
         {
             _bookRepository = bookRepo;
             _mapper = mapper;
@@ -40,7 +39,28 @@ namespace Library_Management_Sys.Controllers
             }
             try
             {
-                var booksList = await _bookRepository.GetAllAsync();
+                var booksList = await _bookRepository.GetAllBooksData();
+                await _activitylogRepository.LogActivity(User, Permissions.Books_View);
+                return Ok(_mapper.Map<List<BookDTO>>(booksList));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+            }
+        }
+
+        //GET: api/Books/Search?query=keyword
+        [HttpGet("Search")]
+        public async Task<ActionResult<IEnumerable<BookDTO>>> SearchBooks(string query)
+        {
+            bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_View);
+            if (!Allowed)
+            {
+                return Forbid();
+            }
+            try
+            {
+                var booksList = await _bookRepository.SearchBooksAsync(query);
                 await _activitylogRepository.LogActivity(User, Permissions.Books_View);
                 return Ok(_mapper.Map<List<BookDTO>>(booksList));
             }
@@ -61,7 +81,7 @@ namespace Library_Management_Sys.Controllers
             }
             try
             {
-                var book = await _bookRepository.GetAsync(b => b.BookId == id);
+                var book = await _bookRepository.GetAsync(b => b.BookId == id,b => b.Authors, b => b.Category, b => b.Publisher);
 
                 if (book == null)
                 {
@@ -79,7 +99,8 @@ namespace Library_Management_Sys.Controllers
 
         // PUT: api/Books
         [HttpPut]
-        public async Task<IActionResult> PutBook(BookDTO bookDto , IFormFile CoverImg)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> PutBook( BookUpdateDTO bookDto, IFormFile CoverImg)
         {
             bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_Update);
             if (!Allowed)
@@ -130,7 +151,8 @@ namespace Library_Management_Sys.Controllers
 
         // POST: api/Books
         [HttpPost]
-        public async Task<ActionResult<BookDTO>> PostBook(BookDTO bookDto , IFormFile CoverImg)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<BookDTO>> PostBook( BookUpdateDTO bookDto,IFormFile CoverImg)
         {
             bool Allowed = await _permissionService.HasPermissionAsync(User, Permissions.Books_Create);
             if (!Allowed)

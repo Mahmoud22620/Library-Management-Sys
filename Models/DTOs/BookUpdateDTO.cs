@@ -1,10 +1,9 @@
 ﻿using Library_Management_Sys.Models.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Library_Management_Sys.Models.DTOs
 {
-    public class BookDTO
+    public class BookUpdateDTO
     {
         public int BookId { get; set; }
         [Required]
@@ -18,13 +17,9 @@ namespace Library_Management_Sys.Models.DTOs
         public string Language { get; set; }
         public BookStatus Status { get; set; }
 
-        public string Category { get; set; }
+        public int Categoryid { get; set; }
 
-        public string Publisher { get; set; }
-
-        public string Authors { get; set; }
-
-
+        public int Publisherid { get; set; }
 
     }
 }
