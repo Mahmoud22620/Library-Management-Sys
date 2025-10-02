@@ -15,12 +15,6 @@ namespace Library_Management_Sys.Repositories.Interfaces
         public Task RenewBorrowing (int bookId, DateTime newDueDate);
         public Task overdueBook (int bookId);
         public Task<IEnumerable<BorrowTransactionDTO>> GetOverdueTransactions();
-        public Task CheckOverdue_Update();
-
-
-
-
-
 
     }
 }

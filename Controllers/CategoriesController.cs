@@ -10,8 +10,8 @@ using Library_Management_Sys.Repositories.Interfaces;
 using AutoMapper;
 using Library_Management_Sys.Models.DTOs;
 using Library_Management_Sys.Services;
-using Library_Management_Sys.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Library_Management_Sys.Helpers.Enums;
 
 namespace Library_Management_Sys.Controllers
 {

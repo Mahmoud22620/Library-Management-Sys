@@ -1,7 +1,7 @@
 ﻿using Library_Management_Sys.Helpers;
+using Library_Management_Sys.Helpers.Enums;
 using Library_Management_Sys.Models;
 using Library_Management_Sys.Models.DTOs;
-using Library_Management_Sys.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

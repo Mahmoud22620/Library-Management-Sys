@@ -62,6 +62,9 @@ namespace Library_Management_Sys
             builder.Services.AddScoped<IBorrowTransactionRepository, BorrowTransactionRepository>();
             builder.Services.AddScoped<IBookAuthorsRepository, BookAuthorsRepository>();
 
+            //hosted service for background tasks
+            builder.Services.AddHostedService<CheckService>();
+
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             // Add services to the container.

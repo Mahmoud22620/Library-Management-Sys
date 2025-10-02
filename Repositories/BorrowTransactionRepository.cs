@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
+using Library_Management_Sys.Helpers.Enums;
 using Library_Management_Sys.Models;
 using Library_Management_Sys.Models.DTOs;
-using Library_Management_Sys.Models.Enums;
 using Library_Management_Sys.Repositories.Interfaces;
 using System.Net;
 
 namespace Library_Management_Sys.Repositories
 {
-    public class BorrowTransactionRepository : GenericRepository<BorrowTransaction>, IBorrowTransactionRepository
+    public class BorrowTransactionRepository : GenericRepository<BorrowTransaction> , IBorrowTransactionRepository
     {
         public LibraryDbContext _db;
         public IMapper _mapper;
@@ -32,11 +32,6 @@ namespace Library_Management_Sys.Repositories
         {
             var transaction = await GetAsync(t => t.Id == id);
             return _mapper.Map<BorrowTransactionDTO>(transaction);
-        }
-
-        public Task CheckOverdue_Update()
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<IEnumerable<BorrowTransactionDTO>> GetAllTransactions()

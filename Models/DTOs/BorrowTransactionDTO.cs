@@ -1,4 +1,4 @@
-﻿using Library_Management_Sys.Models.Enums;
+﻿using Library_Management_Sys.Helpers.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Transactions;

@@ -1,4 +1,4 @@
-﻿using Library_Management_Sys.Models.Enums;
+﻿using Library_Management_Sys.Helpers.Enums;
 
 namespace Library_Management_Sys.Models.DTOs
 {

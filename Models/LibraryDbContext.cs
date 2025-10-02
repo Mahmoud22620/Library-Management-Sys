@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
-using Library_Management_Sys.Models.Enums;
 using Library_Management_Sys.Models;
+using Library_Management_Sys.Helpers.Enums;
 
 namespace Library_Management_Sys.Models
 {

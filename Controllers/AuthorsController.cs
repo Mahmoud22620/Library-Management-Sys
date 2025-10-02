@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
+using Library_Management_Sys.Helpers.Enums;
 using Library_Management_Sys.Models;
 using Library_Management_Sys.Models.DTOs;
-using Library_Management_Sys.Models.Enums;
 using Library_Management_Sys.Repositories.Interfaces;
 using Library_Management_Sys.Services;
 using Microsoft.AspNetCore.Authorization;

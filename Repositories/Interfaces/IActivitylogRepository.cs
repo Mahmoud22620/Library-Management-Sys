@@ -1,5 +1,5 @@
-﻿using Library_Management_Sys.Models;
-using Library_Management_Sys.Models.Enums;
+﻿using Library_Management_Sys.Helpers.Enums;
+using Library_Management_Sys.Models;
 using System.Security.Claims;
 
 namespace Library_Management_Sys.Repositories.Interfaces

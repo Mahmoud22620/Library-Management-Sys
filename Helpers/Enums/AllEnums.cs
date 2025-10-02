@@ -1,4 +1,4 @@
-﻿namespace Library_Management_Sys.Models.Enums
+﻿namespace Library_Management_Sys.Helpers.Enums
 {
    public enum BookStatus
    {
@@ -42,6 +42,10 @@
         Publishers_Update = 1 << 21,
         Publishers_Delete = 1 << 22,
         Publishers_View = 1 << 23,
+        BookAuthors_Create = 1 << 24,
+        BookAuthors_Update = 1 << 25,
+        BookAuthors_Delete = 1 << 26,
+        BookAuthors_View = 1 << 27
     }
 
    
