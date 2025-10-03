@@ -1,4 +1,5 @@
-﻿using Library_Management_Sys.Models;
+﻿using Library_Management_Sys.Helpers.Enums;
+using Library_Management_Sys.Models;
 using System.Linq.Expressions;
 
 namespace Library_Management_Sys.Repositories.Interfaces
@@ -9,5 +10,7 @@ namespace Library_Management_Sys.Repositories.Interfaces
         Task<IEnumerable<Book>> SearchBooksAsync(string query);
 
         Task<IEnumerable<Book>> GetAllBooksData(Expression<Func<Book, bool>>? filter = null);
+
+        Task UpdateBookStatus (int bookId, BookStatus status);
     }
 }

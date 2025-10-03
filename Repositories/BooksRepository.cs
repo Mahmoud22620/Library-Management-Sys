@@ -40,5 +40,15 @@ namespace Library_Management_Sys.Repositories
             return ByName.Union(ByCategory).Union(ByAuthorBooks);
 
         }
+
+        public async Task UpdateBookStatus(int bookId, Helpers.Enums.BookStatus status)
+        {
+            var book = await GetAsync(b => b.BookId == bookId);
+            if (book != null)
+            {
+                book.Status = status;
+                await UpdateAsync(book);
+            }
+        }
     }
 }

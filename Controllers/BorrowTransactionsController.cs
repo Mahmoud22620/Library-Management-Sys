@@ -21,16 +21,18 @@ namespace Library_Management_Sys.Controllers
     public class BorrowTransactionsController : ControllerBase
     {
         private readonly IBorrowTransactionRepository _borrowTransactionRepository;
+        private readonly IBooksRepository _bookRepository;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
         private readonly IActivitylogRepository _activitylogRepository;
 
-        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository)
+        public BorrowTransactionsController(IBorrowTransactionRepository borrowTransactionRepo, IMapper mapper, IPermissionService permissionService, IActivitylogRepository activitylogRepository , IBooksRepository booksRepository)
         {
             _borrowTransactionRepository = borrowTransactionRepo;
             _mapper = mapper;
             _permissionService = permissionService;
             _activitylogRepository = activitylogRepository;
+            _bookRepository = booksRepository;
         }
 
         // GET: api/BorrowTransactions
@@ -162,6 +164,7 @@ namespace Library_Management_Sys.Controllers
                     return BadRequest(new { message = "Book has already been returned" });
                 }
                 await _borrowTransactionRepository.ReturnBook(id);
+                await _bookRepository.UpdateBookStatus(transaction.BookId, BookStatus.inStock);
                 await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Update);
                 return Ok(new { message = "Book returned successfully" });
             }
@@ -274,7 +277,18 @@ namespace Library_Management_Sys.Controllers
                 {
                     return BadRequest();
                 }
+
+                var book = await _bookRepository.GetAsync(b => b.BookId == transactionDto.BookId);
+                if (book == null)
+                {
+                    return NotFound(new { message = "Book not found" });
+                }
+                if(book.Status == BookStatus.outOfStock)
+                {
+                    return BadRequest(new { message = "Book is currently out of stock" });
+                }
                 await _borrowTransactionRepository.CreateAndSaveAsync(_mapper.Map<BorrowTransaction>(transactionDto));
+                await _bookRepository.UpdateBookStatus(transactionDto.BookId, BookStatus.outOfStock);
                 await _activitylogRepository.LogActivity(User, Permissions.BorrowTransactions_Create);
                 return Ok(new { message = "Borrow transaction created successfully" });
             }
