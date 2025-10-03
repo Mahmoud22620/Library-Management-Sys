@@ -23,6 +23,13 @@ A modern Library Management System built with **ASP.NET Core Web API** and **.NE
 - Each action (Create, Read, Update, Delete) controlled separately
 - Example: `Books_Create`, `Members_View`, `Authors_Delete`
 
+**Admin Permission Control**:
+- **Complete User Management**: Admin can independently control user permissions
+- **Role Assignment**: Admin can assign/change roles for any user account
+- **Dynamic Permission Updates**: Real-time permission changes without system restart
+- **Centralized Control**: Single admin dashboard for all user permission management
+- **API Endpoint**: `POST /api/Auth/AssignRole` - Admin-only access for role management
+
 **ASP.NET Core Identity Integration**:
 - Built-in password hashing and security
 - Extensible user model with custom permissions
@@ -39,6 +46,7 @@ A modern Library Management System built with **ASP.NET Core Web API** and **.NE
 - **Many-to-Many**: Books ↔ Authors (via BookAuthor junction table)
 - **Hierarchical**: Categories with parent-child relationships
 - **One-to-Many**: Publishers → Books, Categories → Books
+- **Cascade Protection**: `DeleteBehavior.Restrict` prevents accidental data loss
 
 **Comprehensive Seed Data**:
 - Pre-loaded with 15 books, 15 authors, 10 publishers
@@ -83,7 +91,6 @@ A modern Library Management System built with **ASP.NET Core Web API** and **.NE
 - Proper error handling with meaningful messages
 - Swagger/OpenAPI documentation with JWT support
 
-
 ## Audit & Monitoring
 
 **Complete Activity Logging**:
@@ -92,13 +99,29 @@ A modern Library Management System built with **ASP.NET Core Web API** and **.NE
 - User identification and audit trails
 - Security monitoring and compliance support
 
+## Admin Capabilities
+
+**Comprehensive User Control**:
+- **Independent Permission Management**: Admin can control user accounts without IT intervention
+- **Role-Based Assignment**: Assign users as Admin, Librarian, or Staff
+- **Real-Time Updates**: Permission changes take effect immediately
+- **Secure Access**: Admin-only endpoints protected by `[Authorize(Roles = "Admin")]`
+- **Complete User Lifecycle**: Create, modify, and manage user permissions
+
+**Permission Hierarchy**:
+- **Admin**: Full system access (all CRUD operations on all entities)
+- **Librarian**: Book and transaction management, member viewing/creation
+- **Staff**: Member management, transaction handling, read-only access to library data
+
 ## Key Benefits
 
 1. **Scalable**: Stateless JWT authentication, generic repositories
 2. **Secure**: Fine-grained permissions, comprehensive authentication
-3. **Extensible**: Easy to add new entities, permissions, and features
-4. **Production-Ready**: Error handling, logging, background services
-5. **Developer-Friendly**: Swagger docs, AutoMapper, async/await patterns
+3. **Maintainable**: separation of concerns
+4. **Extensible**: Easy to add new entities, permissions, and features
+5. **Production-Ready**: Error handling, logging, background services
+6. **Developer-Friendly**: Swagger docs, AutoMapper, async/await patterns
+7. **Admin-Controlled**: Self-service user management without technical intervention
 
 ## Technology Stack
 
@@ -109,4 +132,4 @@ A modern Library Management System built with **ASP.NET Core Web API** and **.NE
 - **Mapping**: AutoMapper
 - **Background Tasks**: Hosted Services
 
-This architecture provides a robust foundation for managing library operations while maintaining security, performance, and ease of maintenance.
+This architecture provides a robust foundation for managing library operations while maintaining security, performance, and complete administrative control over user permissions.
